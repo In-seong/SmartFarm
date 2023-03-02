@@ -1,0 +1,96 @@
+#include <ESP8266WiFi.h> 
+#include <MySQL_Connection.h>
+#include <MySQL_Cursor.h>
+#include "DHT.h"
+
+#define DHTPIN 4     // 온습도 센서 데이터 단자 연결 핀번호
+
+
+#define DHTTYPE DHT11   // DHT11 센서일경우 DHT11, DHT22 일경우 22
+
+DHT dht(DHTPIN, DHTTYPE);  //온습도 센서 사용 설정
+
+WiFiClient client;                 // Use this for WiFi instead of EthernetClient
+MySQL_Connection conn(&client);
+MySQL_Cursor* cursor;
+
+// <= 31 Zeichen
+const char *ssid = "SAMSUNG";
+// >= 8 oder <= 63 Zeichen oder NULL
+const char *password = "12345678";
+
+char dbuser[] = "master_user";               // MySQL user login username
+char dbpassword[] = "1234";         // MySQL user login password
+
+char db[] = "test";          // DB-Name
+
+IPAddress server_ip = {3,38,21,49};
+
+// Sample query
+char INSERT_SQL[] = "INSERT into test.HTtest () values()";
+
+void setup() {
+int counter = 0;  // Counter für Verbindung zum WLAN
+  Serial.begin(115200);
+  Serial.println("\nStart");
+
+  Serial.println(F("DHTxx test!"));
+  
+
+  dht.begin(); //온습도 센서 작동
+
+  WiFi.persistent(false);
+  // Betrieb als Station
+  WiFi.mode(WIFI_STA);
+  WiFi.begin(ssid, password);
+  // Wait for connection
+  while (WiFi.status() != WL_CONNECTED) {
+    delay (500);
+    Serial.print(".");
+    counter++;
+    if (counter > 100) {
+      Serial.println("Kein WLAN. Restart!");
+      ESP.restart();
+    }
+  }
+  Serial.print("\nConnected to ");
+  Serial.println(ssid);
+  Serial.print("IP address: ");
+  Serial.println(WiFi.localIP());
+  Serial.println("\nConnecting to database . . .");
+  if (conn.connect(server_ip, 3306, dbuser, dbpassword)) {
+    Serial.println("DB-Connection ok.");
+    delay(500);
+  }
+  else {
+    Serial.println("DB-Connection failed.");
+    delay(10000);
+    ESP.restart();
+  }  
+
+}
+
+void loop() {
+    delay(10000);
+  float h = dht.readHumidity();
+  float t = dht.readTemperature();
+  // if (isnan(h) || isnan(t) ) {
+  //   Serial.println(F("Failed to read from DHT sensor!"));
+  //   return;
+  // }
+  Serial.print(F("습도: "));
+  Serial.print(h);
+  Serial.print(F("%  온도: "));
+  Serial.print(t);
+  Serial.println();
+
+  sprintf(INSERT_SQL, "INSERT into test.HTtest (hum, temp) values(%.1f,%.1f)", h, t); //쿼리문 온습도
+
+   // Initiate the query class instance
+  MySQL_Cursor *cur_mem = new MySQL_Cursor(&conn);
+  // Execute the query
+  cur_mem->execute(INSERT_SQL);
+  // Note: since there are no results, we do not need to read any data
+  // Deleting the cursor also frees up memory used
+  delete cur_mem;
+}
