@@ -1,0 +1,24 @@
+int led_red = 14;
+int led_green = 12;
+
+void setup() {
+Serial.begin(115200);
+pinMode(led_red, OUTPUT);
+pinMode(led_green, OUTPUT);
+Serial.print("start");
+}
+
+void loop() {
+int sensor = analogRead(A0);
+Serial.println(sensor);
+// Serial.println(analogRead(A1));
+
+if(sensor < 800){
+  digitalWrite(led_red, HIGH);
+  digitalWrite(led_green, LOW);
+}else{
+  digitalWrite(led_red, LOW);
+  digitalWrite(led_green, HIGH);
+}
+delay(200);
+}
