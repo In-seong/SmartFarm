@@ -1,0 +1,20 @@
+#include <SPI.h>
+#include <RF24.h>
+#include <nRF24L01.h>
+
+RF24 radio(7,8); // SPI 통신을 위한 (CE, CSN) 핀 선언
+const byte address[6] = "00001"; // 송신기와 수신기를 동일한 값으로 주소 설정함 (5글자)
+
+void setup() {
+  radio.begin();
+  radio.openWritingPipe(address);
+  radio.setPALevel(RF24_PA_MIN);
+  radio.stopListening();
+
+}
+
+void loop() {
+  const char text[] = "abcd";
+  radio.write(&text, sizeof(text));
+  delay(1000);
+}
