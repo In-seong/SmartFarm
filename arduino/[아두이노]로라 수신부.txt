@@ -1,0 +1,25 @@
+#include <SPI.h>
+#include <nRF24L01.h>
+#include <RF24.h>
+RF24 radio(4,2);  //SPI통신을 위한 (CE,CSN) 핀 선언
+const byte address[6] = "00001";
+
+//수신부 wemos
+void setup() {
+Serial.begin(9600);
+radio.begin();
+radio.openReadingPipe(0,address);
+radio.setPALevel(RF24_PA_MIN);
+radio.startListening();
+
+}
+
+void loop() {
+if(radio.available()){
+  char text[32] = "";
+  radio.read(&text, sizeof(text));
+  Serial.println(text);
+  Serial.println("if문 실행중");
+}
+delay(1000);
+}
