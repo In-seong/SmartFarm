@@ -1,0 +1,22 @@
+int A_IA = 14;
+int A_IB = 12;
+ void setup(){
+  pinMode(A_IA, OUTPUT);
+  pinMode(A_IB, OUTPUT);
+  Serial.begin(115200);
+  Serial.print("start");
+  
+  digitalWrite(A_IA, LOW);
+  digitalWrite(A_IB,LOW);
+}
+
+ void loop(){
+  digitalWrite(A_IA, HIGH);
+  digitalWrite(A_IB, LOW);
+  delay(5000);
+  Serial.println("loop");
+  
+  digitalWrite(A_IA, LOW);
+  digitalWrite(A_IB, LOW);
+  delay(5000);
+}
